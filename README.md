@@ -152,6 +152,7 @@ module.exports = {
 | `rootContent`                    | string   | (see below)       | Custom content to include at the root level of llms.txt       |
 | `fullRootContent`                | string   | (see below)       | Custom content to include at the root level of llms-full.txt  |
 | `logLevel`                       | string   | `'normal'`        | Logging level for plugin output: `'quiet'`, `'normal'`, or `'verbose'` |
+| `useRelativeUrls`                | boolean  | `false`           | Emit origin-relative links in `llms.txt` (e.g. `/docs/page.md`) instead of absolute URLs — useful for subpath deployments where the site `url` can't be pinned |
 
 ### Custom Root Content
 

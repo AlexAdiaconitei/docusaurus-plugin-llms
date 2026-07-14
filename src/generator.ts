@@ -54,6 +54,21 @@ function applyMdExtension(url: string): string {
 }
 
 /**
+ * Convert an absolute URL to an origin-relative one, keeping the path (which
+ * includes the site's baseUrl), query, and fragment — e.g.
+ * `https://site.com/docs/page.md` → `/docs/page.md`. Non-absolute or unparseable
+ * values are returned unchanged.
+ */
+function toRelativeUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return url;
+  }
+}
+
+/**
  * Generate an LLM-friendly file
  * @param docs - Processed document information
  * @param outputPath - Path to write the output file
@@ -74,7 +89,8 @@ export async function generateLLMFile(
   version?: string,
   customRootContent?: string,
   batchSize: number = 100,
-  addMdExtension: boolean = true
+  addMdExtension: boolean = true,
+  useRelativeUrls: boolean = false
 ): Promise<void> {
   // Validate path length before proceeding
   if (!validatePathLength(outputPath)) {
@@ -174,7 +190,8 @@ ${doc.content}`;
           sectionMap.set(sectionKey, []);
         }
         const cleanedDescription = cleanDescriptionForToc(doc.description);
-        const linkUrl = addMdExtension ? applyMdExtension(doc.url) : doc.url;
+        let linkUrl = addMdExtension ? applyMdExtension(doc.url) : doc.url;
+        if (useRelativeUrls) linkUrl = toRelativeUrl(linkUrl);
         sectionMap.get(sectionKey)!.push(
           `- [${doc.title}](${linkUrl})${cleanedDescription ? `: ${cleanedDescription}` : ''}`
         );
@@ -190,7 +207,8 @@ ${doc.content}`;
     } else {
       const tocItems = docs.map(doc => {
         const cleanedDescription = cleanDescriptionForToc(doc.description);
-        const linkUrl = addMdExtension ? applyMdExtension(doc.url) : doc.url;
+        let linkUrl = addMdExtension ? applyMdExtension(doc.url) : doc.url;
+        if (useRelativeUrls) linkUrl = toRelativeUrl(linkUrl);
         return `- [${doc.title}](${linkUrl})${cleanedDescription ? `: ${cleanedDescription}` : ''}`;
       });
       tocContent = `## Table of Contents\n\n${tocItems.join('\n')}`;
@@ -472,9 +490,10 @@ export async function generateStandardLLMFiles(
     rootContent,
     fullRootContent,
     processingBatchSize = 100,
-    addMdExtension = true
+    addMdExtension = true,
+    useRelativeUrls = false
   } = options;
-  
+
   if (!generateLLMsTxt && !generateLLMsFullTxt) {
     logger.warn('No standard LLM files configured for generation. Skipping.');
     return;
@@ -523,7 +542,8 @@ export async function generateStandardLLMFiles(
       version,
       rootContent,
       processingBatchSize,
-      addMdExtension
+      addMdExtension,
+      useRelativeUrls
     );
   }
 
@@ -539,7 +559,8 @@ export async function generateStandardLLMFiles(
       version,
       fullRootContent,
       processingBatchSize,
-      addMdExtension
+      addMdExtension,
+      useRelativeUrls
     );
   }
 }
@@ -559,9 +580,10 @@ export async function generateCustomLLMFiles(
     ignoreFiles = [],
     generateMarkdownFiles = false,
     processingBatchSize = 100,
-    addMdExtension = true
+    addMdExtension = true,
+    useRelativeUrls = false
   } = options;
-  
+
   if (customLLMFiles.length === 0) {
     logger.warn('No custom LLM files configured. Skipping.');
     return;
@@ -617,7 +639,8 @@ export async function generateCustomLLMFiles(
         customFile.version,
         customFile.rootContent,
         processingBatchSize,
-        addMdExtension
+        addMdExtension,
+        useRelativeUrls
       );
       
       logger.info(`Generated custom LLM file: ${customFile.filename} with ${customDocs.length} documents`);

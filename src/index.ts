@@ -254,6 +254,7 @@ export default function docusaurusPluginLLMs(
     processingBatchSize = 100,
     warnOnIgnoredFiles = false,
     rewriteImageUrls = false,
+    useRelativeUrls = false,
   } = options;
 
   // Normalize docsDir into docsSections array
@@ -323,6 +324,7 @@ export default function docusaurusPluginLLMs(
       processingBatchSize,
       warnOnIgnoredFiles,
       rewriteImageUrls,
+      useRelativeUrls,
     }
   };
 
