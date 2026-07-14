@@ -5,6 +5,12 @@ All notable changes to the docusaurus-plugin-llms will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.3] - 2026-07-13
+
+### Added
+
+- **`useRelativeUrls` option** (#37, #42) — opt-in (`false` by default) that emits origin-relative links in `llms.txt` (e.g. `/docs/page.md`) instead of absolute URLs. Useful for subpath deployments where the site `url` can't be pinned to the real deployment host. The baseUrl portion of the path is preserved.
+
 ## [0.4.2] - 2026-07-13
 
 ### Fixed

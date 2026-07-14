@@ -152,6 +152,12 @@ export interface PluginOptions {
    *  (e.g., `https://site.com/assets/images/foo-abc123.png`) so LLMs can access the images. */
   rewriteImageUrls?: boolean;
 
+  /** Whether to emit origin-relative URLs instead of absolute ones (default: false).
+   *  When enabled, links in `llms.txt` use the path only — including the site's
+   *  baseUrl — e.g. `/docs/page.md` instead of `https://site.com/docs/page.md`.
+   *  Useful when the site can't pin a stable `url` (e.g. subpath deployments). */
+  useRelativeUrls?: boolean;
+
   /** Index signature for Docusaurus plugin compatibility */
   [key: string]: unknown;
 }
