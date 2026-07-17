@@ -14,6 +14,7 @@
 
 const fs = require('fs').promises;
 const path = require('path');
+const os = require('os');
 const { processMarkdownFile } = require('../lib/processor');
 
 async function setupTestFiles() {
@@ -73,10 +74,11 @@ async function runTest() {
 
   const siteDir = await setupTestFiles();
 
-  // Docusaurus runs builds from the site directory, and @site resolution
-  // relies on that — mirror it here.
+  // Deliberately run from a cwd that is NOT the site directory, so the test
+  // proves `@site` resolves via the explicit siteDir argument rather than
+  // process.cwd().
   const originalCwd = process.cwd();
-  process.chdir(siteDir);
+  process.chdir(os.tmpdir());
 
   try {
     const docPath = path.join(siteDir, 'docs', 'editing.mdx');
@@ -86,7 +88,12 @@ async function runTest() {
       'https://example.com',
       'docs',
       undefined,
-      true // excludeImports
+      true, // excludeImports
+      false, // removeDuplicateHeadings
+      undefined, // resolvedUrl
+      undefined, // imageAssetMap
+      undefined, // outDir
+      siteDir // siteDir — used to resolve @site/ imports
     );
 
     let allTestsPassed = true;
@@ -124,9 +131,7 @@ async function runTest() {
       console.log('✅ Test 4 passed: partial resolved in list context too');
     }
 
-    // Test 5: relative underscore convention still works (regression guard)
-    // — covered by test-partials.js; here we just confirm the doc's own
-    // content survived processing.
+    // Test 5: the surrounding document content survives processing.
     if (!result.content.includes('Make your changes.')) {
       console.log('❌ Test 5 failed: surrounding document content lost');
       allTestsPassed = false;
